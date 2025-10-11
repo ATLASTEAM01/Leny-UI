@@ -2197,81 +2197,119 @@ task.spawn(function()
 end)
 
 function Library:createToggleButton()
-    local ToggleButtonGui = Instance.new("ScreenGui")
-    ToggleButtonGui.Name = "LenyUIToggleButton"
-    ToggleButtonGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ToggleButtonGui.ResetOnSpawn = false
+	local ToggleButtonGui = Instance.new("ScreenGui")
+	ToggleButtonGui.Name = "LenyUIToggleButton"
+	ToggleButtonGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	ToggleButtonGui.ResetOnSpawn = false
 
-    if RunService:IsStudio() then
-        ToggleButtonGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-    else
-        ToggleButtonGui.Parent = cloneref(game.CoreGui)
-    end
-    
-    local ButtonContainer = Instance.new("Frame")
-    ButtonContainer.Name = "ButtonContainer"
-    ButtonContainer.Size = UDim2.new(0, 64, 0, 64)
-    ButtonContainer.AnchorPoint = Vector2.new(1, 1)
-    ButtonContainer.Position = UDim2.new(1, -20, 1, -20)
-    ButtonContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    ButtonContainer.BackgroundTransparency = 0.3
-    ButtonContainer.BorderSizePixel = 0
-    ButtonContainer.Parent = ToggleButtonGui
+	if RunService:IsStudio() then
+		ToggleButtonGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+	else
+		ToggleButtonGui.Parent = cloneref(game.CoreGui)
+	end
 
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 12)
-    UICorner.Parent = ButtonContainer
+	local ButtonContainer = Instance.new("Frame")
+	ButtonContainer.Name = "ButtonContainer"
+	ButtonContainer.Size = UDim2.new(0, 64, 0, 64)
+	ButtonContainer.AnchorPoint = Vector2.new(1, 1)
+	ButtonContainer.Position = UDim2.new(1, -20, 1, -20)
+	ButtonContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	ButtonContainer.BackgroundTransparency = 0.3
+	ButtonContainer.BorderSizePixel = 0
+	ButtonContainer.Active = true
+	ButtonContainer.Parent = ToggleButtonGui
 
-    local ToggleButton = Instance.new("ImageButton")
-    ToggleButton.Name = "ToggleButton"
-    ToggleButton.Size = UDim2.new(1, -12, 1, -12)
-    ToggleButton.Position = UDim2.new(0.5, 0, 0.5, 0)
-    ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
-    ToggleButton.BackgroundTransparency = 1
-    ToggleButton.Image = "rbxassetid://110774279816088"
-    ToggleButton.ImageColor3 = Color3.fromRGB(255, 30, 30)
-    ToggleButton.ScaleType = Enum.ScaleType.Fit
-    ToggleButton.Parent = ButtonContainer
+	local Stroke = Instance.new("UIStroke")
+	Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	Stroke.Color = Color3.fromRGB(230, 230, 230)
+	Stroke.Thickness = 1
+	Stroke.Transparency = 0.5
+	Stroke.Parent = ButtonContainer
 
-    local RedDot = Instance.new("Frame")
-    RedDot.Name = "RedDot"
-    RedDot.Size = UDim2.new(0, 10, 0, 10)
-    RedDot.Position = UDim2.new(1, -5, 0, -5)
-    RedDot.AnchorPoint = Vector2.new(0.5, 0.5)
-    RedDot.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-    RedDot.BorderSizePixel = 0
-    RedDot.Parent = ToggleButton
-    
-    local DotCorner = Instance.new("UICorner")
-    DotCorner.CornerRadius = UDim.new(1, 0)
-    DotCorner.Parent = RedDot
+	local UICorner = Instance.new("UICorner")
+	UICorner.CornerRadius = UDim.new(0, 12)
+	UICorner.Parent = ButtonContainer
 
-    ToggleButton.MouseButton1Click:Connect(function()
-        Library:ToggleUI()
-        local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        local tween = TweenService:Create(ToggleButton, tweenInfo, {Size = UDim2.new(1, -20, 1, -20)})
-        tween:Play()
-        tween.Completed:Wait()
-        TweenService:Create(ToggleButton, tweenInfo, {Size = UDim2.new(1, -12, 1, -12)}):Play()
-    end)
-    
-    ToggleButton.MouseEnter:Connect(function()
-        TweenService:Create(ButtonContainer, TweenInfo.new(0.2), {BackgroundTransparency = 0.1}):Play()
-        TweenService:Create(ToggleButton, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(255, 100, 100)}):Play()
-    end)
+	local ToggleButton = Instance.new("ImageButton")
+	ToggleButton.Name = "ToggleButton"
+	ToggleButton.Size = UDim2.new(1, -8, 1, -8)
+	ToggleButton.Position = UDim2.new(0.5, 0, 0.5, 0)
+	ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
+	ToggleButton.BackgroundTransparency = 1
+	ToggleButton.Image = "rbxassetid://110774279816088"
+	ToggleButton.ImageColor3 = Color3.fromRGB(255, 30, 30)
+	ToggleButton.ScaleType = Enum.ScaleType.Fit
+	ToggleButton.Parent = ButtonContainer
 
-    ToggleButton.MouseLeave:Connect(function()
-        TweenService:Create(ButtonContainer, TweenInfo.new(0.2), {BackgroundTransparency = 0.3}):Play()
-        TweenService:Create(ToggleButton, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(255, 30, 30)}):Play()
-    end)
+	local RedDot = Instance.new("Frame")
+	RedDot.Name = "RedDot"
+	RedDot.Size = UDim2.new(0, 10, 0, 10)
+	RedDot.Position = UDim2.new(1, -5, 0, -5)
+	RedDot.AnchorPoint = Vector2.new(0.5, 0.5)
+	RedDot.BorderSizePixel = 0
+	RedDot.Parent = ToggleButton
 
-    table.insert(Connections, {
-        Disconnect = function()
-            if ToggleButtonGui and ToggleButtonGui.Parent then
-                ToggleButtonGui:Destroy()
-            end
-        end
-    })
+	local DotCorner = Instance.new("UICorner")
+	DotCorner.CornerRadius = UDim.new(1, 0)
+	DotCorner.Parent = RedDot
+
+	local function updateDotColor()
+		if ScreenGui.Enabled then
+			RedDot.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
+		else
+			RedDot.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+		end
+	end
+	
+	ScreenGui:GetPropertyChangedSignal("Enabled"):Connect(updateDotColor)
+	updateDotColor()
+
+	ToggleButton.MouseButton1Click:Connect(function()
+		Library:ToggleUI()
+	end)
+
+	ToggleButton.MouseEnter:Connect(function()
+		ButtonContainer.BackgroundTransparency = 0.1
+		ToggleButton.ImageColor3 = Color3.fromRGB(255, 100, 100)
+	end)
+
+	ToggleButton.MouseLeave:Connect(function()
+		ButtonContainer.BackgroundTransparency = 0.3
+		ToggleButton.ImageColor3 = Color3.fromRGB(255, 30, 30)
+	end)
+
+	local buttonDragInput = nil
+	local buttonDragStart = nil
+	local buttonStartPos = nil
+
+	ButtonContainer.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			buttonDragInput = input
+			buttonDragStart = input.Position
+			buttonStartPos = ButtonContainer.Position
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if buttonDragInput and input == buttonDragInput then
+			local delta = input.Position - buttonDragStart
+			ButtonContainer.Position = UDim2.new(buttonStartPos.X.Scale, buttonStartPos.X.Offset + delta.X, buttonStartPos.Y.Scale, buttonStartPos.Y.Offset + delta.Y)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if buttonDragInput and input == buttonDragInput then
+			buttonDragInput = nil
+		end
+	end)
+
+	table.insert(Connections, {
+		Disconnect = function()
+			if ToggleButtonGui and ToggleButtonGui.Parent then
+				ToggleButtonGui:Destroy()
+			end
+		end,
+	})
 end
 
 Library:createToggleButton()
