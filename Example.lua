@@ -1,10 +1,10 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Grayy12/Leny-UI/refs/heads/main/Library.lua", true))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ATLASTEAM01/Leny-UI/refs/heads/main/Library.lua", true))()
 
 Library.new({
-	sizeX = 770,
-	sizeY = 600,
-	title = "yo",
-	tabWidth = 200, -- (72 for icons only)
+	sizeX = 400,
+	sizeY = 300,
+	title = "femboy",
+	tabWidth = 50, -- (72 for icons only)
 	PrimaryBackgroundColor = Library.Theme.PrimaryBackgroundColor,
 	SecondaryBackgroundColor = Library.Theme.SecondaryBackgroundColor,
 	TertiaryBackgroundColor = Library.Theme.TertiaryBackgroundColor,
@@ -19,9 +19,9 @@ Library.new({
 Library:notify({
 	title = "Notification",
 	text = "Hello world",
-	maxSizeX = 300,
+	maxSizeX = 200,
 	scaleX = 0.165,
-	sizeY = 200,
+	sizeY = 70,
 })
 
 local Main = Library:createLabel({text = "Main"})
