@@ -2216,7 +2216,6 @@ function Library:createToggleButton()
 	ButtonContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 	ButtonContainer.BackgroundTransparency = 0.3
 	ButtonContainer.BorderSizePixel = 0
-	ButtonContainer.Active = true
 	ButtonContainer.Parent = ToggleButtonGui
 
 	local Stroke = Instance.new("UIStroke")
@@ -2232,7 +2231,7 @@ function Library:createToggleButton()
 
 	local ToggleButton = Instance.new("ImageButton")
 	ToggleButton.Name = "ToggleButton"
-	ToggleButton.Size = UDim2.new(1, -8, 1, -8)
+	ToggleButton.Size = UDim2.fromScale(0.8, 0.8)
 	ToggleButton.Position = UDim2.new(0.5, 0, 0.5, 0)
 	ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
 	ToggleButton.BackgroundTransparency = 1
@@ -2241,26 +2240,26 @@ function Library:createToggleButton()
 	ToggleButton.ScaleType = Enum.ScaleType.Fit
 	ToggleButton.Parent = ButtonContainer
 
-	local RedDot = Instance.new("Frame")
-	RedDot.Name = "RedDot"
-	RedDot.Size = UDim2.new(0, 10, 0, 10)
-	RedDot.Position = UDim2.new(1, -5, 0, -5)
-	RedDot.AnchorPoint = Vector2.new(0.5, 0.5)
-	RedDot.BorderSizePixel = 0
-	RedDot.Parent = ToggleButton
+	local StatusDot = Instance.new("Frame")
+	StatusDot.Name = "StatusDot"
+	StatusDot.Size = UDim2.new(0, 10, 0, 10)
+	StatusDot.AnchorPoint = Vector2.new(1, 0)
+	StatusDot.Position = UDim2.new(1, -2, 0, 2)
+	StatusDot.BorderSizePixel = 0
+	StatusDot.Parent = ToggleButton
 
 	local DotCorner = Instance.new("UICorner")
 	DotCorner.CornerRadius = UDim.new(1, 0)
-	DotCorner.Parent = RedDot
+	DotCorner.Parent = StatusDot
 
 	local function updateDotColor()
 		if ScreenGui.Enabled then
-			RedDot.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
+			StatusDot.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
 		else
-			RedDot.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+			StatusDot.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
 		end
 	end
-	
+
 	ScreenGui:GetPropertyChangedSignal("Enabled"):Connect(updateDotColor)
 	updateDotColor()
 
@@ -2281,8 +2280,8 @@ function Library:createToggleButton()
 	local buttonDragInput = nil
 	local buttonDragStart = nil
 	local buttonStartPos = nil
-
-	ButtonContainer.InputBegan:Connect(function(input)
+	
+	ToggleButton.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			buttonDragInput = input
 			buttonDragStart = input.Position
