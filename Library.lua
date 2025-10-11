@@ -2235,7 +2235,7 @@ function Library:createToggleButton()
 	ToggleButton.Position = UDim2.new(0.5, 0, 0.5, 0)
 	ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
 	ToggleButton.BackgroundTransparency = 1
-	ToggleButton.Image = "rbxassetid://110774279816088"
+	ToggleButton.Image = "rbxassetid://73424242673503"
 	ToggleButton.ImageColor3 = Color3.fromRGB(255, 30, 30)
 	ToggleButton.ScaleType = Enum.ScaleType.Fit
 	ToggleButton.Parent = ButtonContainer
