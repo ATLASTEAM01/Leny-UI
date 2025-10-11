@@ -5,6 +5,7 @@ local TESTING = false
 local RunService = game:GetService("RunService")
 local TextService = game:GetService("TextService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local ScreenGui = game:GetObjects("rbxassetid://99852798675591")[1]
 ScreenGui.Enabled = false
@@ -25,11 +26,11 @@ local Library = {
 	firstTabDebounce = false,
 	firstSubTabDebounce = false,
 	processedEvent = false,
-	managerCreated = false, -- Using this as a check to clean up unused Addon objects
+	managerCreated = false,
 	lineIndex = 0,
 
 	Connections = {},
-	Addons = {}, -- To store addon frames to clean up unused ones later, this is my solution to this problem, if you can find a better solution then just create a pull request, thanks.
+	Addons = {},
 	Exclusions = {},
 	SectionFolder = {
 		Left = {},
@@ -44,7 +45,7 @@ local Library = {
 		ColorPicker = {},
 	},
 	Theme = {},
-	DropdownSizes = {}, -- to store previous opened dropdown size to resize scrollingFrame canvassize
+	DropdownSizes = {},
 }
 Library.__index = Library
 
@@ -121,7 +122,6 @@ Library.Theme = Theme
 
 local Popups = ScreenGui.Popups
 
--- Set default size for UI
 local Glow = ScreenGui.Glow
 Glow.Size = UDim2.fromOffset(Library.sizeX, Library.sizeY)
 
@@ -133,7 +133,6 @@ local Resize = Filler.Resize
 local Line = Filler.Line
 local Title = Tabs.Frame.Title
 
--- Tab resizing stuff
 local tabResizing = false
 Resize.MouseButton1Down:Connect(function()
 	tabResizing = true
@@ -177,7 +176,6 @@ Resize.InputEnded:Connect(function(input)
 	end
 end)
 
--- Mobile compatibility
 Glow:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 	for _, data in ipairs(Library.SectionFolder.Right) do
 		if Glow.AbsoluteSize.X <= 660 then
@@ -264,10 +262,8 @@ function Library.new(options)
 			local elapsed = tick() - startTime
 			local progress = (elapsed % cycleDuration) / cycleDuration
 			
-			-- Smooth hue cycling from 0 to 1 (full spectrum)
 			local currentHue = progress
 			
-			-- Create color with cycled hue but original saturation/value
 			local newColor = Color3.fromHSV(currentHue, originalSaturation, originalValue)
 			titleIcon.ImageColor3 = newColor
 		end)
@@ -288,16 +284,13 @@ function Library.new(options)
 			rainbowConnection = nil
 		end
 		
-		-- Restore original theme color
 		titleIcon.ImageColor3 = Library.Theme.PrimaryTextColor
 		
-		-- Re-register to theme system
 		Theme:registerToObjects({
 			{ object = titleIcon, property = "ImageColor3", theme = { "PrimaryTextColor" } },
 		})
 	end
 	
-	-- icon setup
 	if options.loadIcon then
 		local TitleIcon = Title:FindFirstChild("TitleIcon")
 		if not TitleIcon then
@@ -374,7 +367,7 @@ function Library:createAddons(text, imageButton, scrollingFrame, additionalAddon
 		end,
 
 		createDropdown = function(self, options)
-			options.default = {} -- need to do this for some reason since I clearly implied that default was as table value but guess not?
+			options.default = {}
 			Library:createDropdown(options, Addon.Inner, scrollingFrame)
 		end,
 
@@ -405,7 +398,6 @@ function Library:createAddons(text, imageButton, scrollingFrame, additionalAddon
 
 			if type(originalFunction) == "function" then
 				return function(...)
-					-- Show imageButton if the index name is "create"
 					if string.match(key, "create") then
 						if Addon.Parent == nil then
 							Addon.Parent = Popups
@@ -414,7 +406,6 @@ function Library:createAddons(text, imageButton, scrollingFrame, additionalAddon
 						imageButton.Visible = true
 					end
 
-					-- updateTransparentObjects again to account for the new creation of element after the call.
 					return originalFunction(...), Popup:updateTransparentObjects(Addon)
 				end
 			else
@@ -430,7 +421,7 @@ end
 
 function Library:destroy()
 	for _, rbxSignals in ipairs(Connections) do
-		rbxSignals:Disconnect() -- Changed from disconnect() to Disconnect()
+		rbxSignals:Disconnect()
 	end
 	task.wait(0.1)
 	ScreenGui:Destroy()
@@ -479,7 +470,6 @@ function Library:createTab(options: table)
 		icon = { Default = "124718082122263", ExpectedType = "string" },
 	})
 
-	-- Change tab size depending on Library.tabSizeX, maybe make resizer for tabs later
 	Background.Tabs.Size = UDim2.new(0, Library.tabSizeX, 1, 0)
 	Background.Pages.Size = UDim2.new(1, -Library.tabSizeX, 1, 0)
 
@@ -609,7 +599,6 @@ function Library:createTab(options: table)
 
 	local Navigation = Modules.Navigation.new(Context)
 
-	-- this is stupid but anyways!!!
 	if not self.firstTabDebounce then
 		Navigation:enableFirstTab()
 		self.firstTabDebounce = true
@@ -646,7 +635,6 @@ function Library:createTab(options: table)
 end
 
 function Library:createSubTab(options: table)
-	-- Use provided options, or fall back to defaults if not provided
 	Utility:validateOptions(options, {
 		sectionStyle = { Default = "Double", ExpectedType = "string" },
 		text = { Default = "SubTab", ExpectedType = "string" },
@@ -669,7 +657,6 @@ function Library:createSubTab(options: table)
 	SubTab.Size =
 		UDim2.new(0, TextService:GetTextSize(options.text, 15, Enum.Font.MontserratMedium, SubTab.AbsoluteSize).X, 1, 0)
 
-	-- Calculate subTab position to position underline
 	local subTabIndex, subTabPosition = 0, 0
 
 	for index, subTab in ipairs(ScrollingFrame:GetChildren()) do
@@ -792,7 +779,6 @@ function Library:createSection(options: table)
 	Section.Visible = true
 	Section.Parent = self[options.position]
 
-	-- Change section style
 	local screenSize = workspace.CurrentCamera.ViewportSize
 	if self.sectionStyle == "Single" or (screenSize.X <= 740 and screenSize.Y <= 590) or self.sizeX <= 660 then
 		if options.position == "Right" then
@@ -807,7 +793,6 @@ function Library:createSection(options: table)
 		Section.Parent = self.Left
 	end
 
-	-- Store objects to change section style depending on the size of the UI
 	if options.position == "Right" and self.sectionStyle ~= "Single" then
 		table.insert(self.SectionFolder.Right, { folders = { Left = self.Left, Right = self.Right }, object = Section })
 	end
@@ -821,7 +806,6 @@ function Library:createSection(options: table)
 	local TextLabel = Inner.TextLabel
 	TextLabel.Text = options.text
 
-	-- Auto size section
 	Section.Inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		Section.Size = UDim2.new(1, 0, 0, Section.Inner.UIListLayout.AbsoluteContentSize.Y + 28)
 	end)
@@ -1091,7 +1075,6 @@ function Library:createPicker(options: table, parent, scrollingFrame, isPickerBo
 	local ColorPicker = Assets.Elements.ColorPicker:Clone()
 	ColorPicker.Parent = Popups
 
-	-- Put transparent objects to not be visible to make cool effect later!!
 	local ColorPickerTransparentObjects = Utility:getTransparentObjects(ColorPicker)
 
 	for _, data in ipairs(ColorPickerTransparentObjects) do
@@ -1235,7 +1218,6 @@ function Library:createDropdown(options: table, parent, scrollingFrame)
 	local DropButtons = Inner.ScrollingFrame
 	local Search = Inner.TextBox
 
-	-- Auto size ScrollingFrame and List
 	DropButtons.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 		DropButtons.CanvasSize =
 			UDim2.new(0, 0, 0, DropButtons.UIListLayout.AbsoluteContentSize.Y + Inner.UIListLayout.Padding.Offset)
@@ -1266,7 +1248,6 @@ function Library:createDropdown(options: table, parent, scrollingFrame)
 		end
 	end)
 
-	-- As long we don't spam it were good i guess when changing canvassize when tweened but let's not do that
 	local function toggleList()
 		if List.Size.Y.Offset <= 0 then
 			for index, value in ipairs(Library.DropdownSizes) do
@@ -1276,7 +1257,6 @@ function Library:createDropdown(options: table, parent, scrollingFrame)
 				end
 			end
 
-			-- Hide current open dropdowns and make sure enabled dropdown is on top
 			for _, object in ipairs(scrollingFrame:GetDescendants()) do
 				if object.Name == "Section" then
 					object.ZIndex = 1
@@ -1383,7 +1363,6 @@ function Library:createDropdown(options: table, parent, scrollingFrame)
 
 	TextButton.MouseButton1Down:Connect(toggleList)
 
-	-- Search drop buttons function
 	Search:GetPropertyChangedSignal("Text"):Connect(function()
 		for _, dropButton in ipairs(DropButtons:GetChildren()) do
 			if not dropButton:IsA("Frame") then
@@ -1473,16 +1452,6 @@ function Library:createKeybind(options: table, parent, scrollingFrame)
 	local TextButton = Background.TextButton
 
 	TextButton.Text = options.default
-	-- if not table.find(self.Exclusions, options.default) then
-	-- 	TextButton.Text = options.default
-	-- else
-	-- 	TextButton.Text = "None"
-	-- 	warn("You already have this key binded")
-	-- end
-
-	-- if options.default ~= "None" then
-	-- 	table.insert(Exclusions, options.default)
-	-- end
 
 	local Context = Utility:validateContext({
 		default = { Value = options.default, ExpectedType = "string" },
@@ -1534,7 +1503,6 @@ function Library:createKeybind(options: table, parent, scrollingFrame)
 	})
 end
 
--- Rushed this, later put it into a module like the other elements, even though it's simple.
 function Library:createButton(options: table, parent, scrollingFrame)
 	Utility:validateOptions(options, {
 		text = { Default = "Button", ExpectedType = "string" },
@@ -1580,7 +1548,6 @@ function Library:createButton(options: table, parent, scrollingFrame)
 	})
 end
 
--- Redo textbox later
 function Library:createTextBox(options: table, parent, scrollingFrame)
 	Utility:validateOptions(options, {
 		text = { Default = "Textbox", ExpectedType = "string" },
@@ -1648,7 +1615,6 @@ function Library:createTextBox(options: table, parent, scrollingFrame)
 	})
 end
 
--- Later put this into a module, but this is fine if it's put here anyways.
 local ChildRemoved = false
 function Library:notify(options: table)
 	Utility:validateOptions(options, {
@@ -1674,7 +1640,6 @@ function Library:notify(options: table)
 
 	local Line = Notification.Line
 
-	-- Put transparent objects to not be visible to make cool effect
 	local NotificationTransparentObjects = Utility:getTransparentObjects(Notification)
 
 	for _, data in ipairs(NotificationTransparentObjects) do
@@ -1683,7 +1648,6 @@ function Library:notify(options: table)
 
 	Notification.BackgroundTransparency = 1
 
-	-- Get back NotificationTransparentObjects again and make it visible now with cool effect!!
 	for _, data in ipairs(NotificationTransparentObjects) do
 		Utility:tween(data.object, { [data.property] = 0 }, 0.2):Play()
 	end
@@ -1701,14 +1665,11 @@ function Library:notify(options: table)
 			continue
 		end
 
-		-- Current notification position
 		notificationPosition -= notificationSize + PADDING_Y
-		-- Update notification size for next time to get proper position
 		notificationSize = notification.Size.Y.Offset
 		Notification.Position = UDim2.new(1, Notification.Position.X.Offset, 1, notificationPosition)
 	end
 
-	-- Update notification position when notification is removed
 	if not ChildRemoved then
 		ScreenGui.Notifications.ChildRemoved:Connect(function(child)
 			for index, notification in ipairs(ScreenGui.Notifications:GetChildren()) do
@@ -1719,9 +1680,7 @@ function Library:notify(options: table)
 					continue
 				end
 
-				-- Current notification position
 				notificationPosition -= notificationSize + PADDING_Y
-				-- Update notification size for next time to get proper position
 				notificationSize = notification.AbsoluteSize.Y
 				Utility:tween(notification, { Position = UDim2.new(1, -24, 1, notificationPosition) }, 0.2):Play()
 			end
@@ -1730,7 +1689,6 @@ function Library:notify(options: table)
 		ChildRemoved = true
 	end
 
-	-- Auto remove notification after a delay
 	task.delay(options.duration, function()
 		if Notification then
 			for _, data in ipairs(Utility:getTransparentObjects(Notification)) do
@@ -1744,11 +1702,9 @@ function Library:notify(options: table)
 		end
 	end)
 
-	-- Show notification
 	Utility:tween(Notification, { Position = UDim2.new(1, -24, 1, notificationPosition) }, 0.2):Play()
 	task.wait(0.2)
 
-	-- Register to Theme
 	Theme:registerToObjects({
 		{ object = Notification, property = "BackgroundColor3", theme = { "SecondaryBackgroundColor" } },
 		{ object = Title, property = "BackgroundColor3", theme = { "PrimaryBackgroundColor" } },
@@ -1766,7 +1722,6 @@ function Library:ToggleUI(state)
     end
 end
 
--- Save Manager, Theme Manager, UI settings
 function Library:createManager(options: table)
 	Utility:validateOptions(options, {
 		folderName = { Default = "Leny", ExpectedType = "string" },
@@ -1950,37 +1905,30 @@ function Library:createManager(options: table)
 	local ThemeManager = Page:createSection({ position = "Right", text = "Theme Manager" })
 
 	function createNaturalRainbowEffect(titleIcon)
-		-- Clean up existing connection
 		if rainbowConnection then
 			rainbowConnection:Disconnect()
 			rainbowConnection = nil
 		end
 		
-		-- Get the original color to maintain saturation and value
 		local originalColor = Library.Theme.PrimaryTextColor
 		local h, s, v = originalColor:ToHSV()
 		
-		-- Store original saturation and value for natural cycling
-		local originalSaturation = math.max(s, 0.8) -- Ensure minimum saturation for vibrant colors
-		local originalValue = math.max(v, 0.9) -- Ensure brightness
+		local originalSaturation = math.max(s, 0.8)
+		local originalValue = math.max(v, 0.9)
 		
 		local startTime = tick()
-		local cycleDuration = 4 -- 4 seconds for full hue cycle
+		local cycleDuration = 4
 		
-		-- Create the smooth hue cycling connection
 		rainbowConnection = game:GetService("RunService").Heartbeat:Connect(function()
 			local elapsed = tick() - startTime
 			local progress = (elapsed % cycleDuration) / cycleDuration
 			
-			-- Smooth hue cycling from 0 to 1 (full spectrum)
 			local currentHue = progress
 			
-			-- Create color with cycled hue but original saturation/value
 			local newColor = Color3.fromHSV(currentHue, originalSaturation, originalValue)
 			titleIcon.ImageColor3 = newColor
 		end)
 		
-		-- Store connection for cleanup
 		table.insert(Connections, {
 			Disconnect = function()
 				if rainbowConnection then
@@ -2008,10 +1956,8 @@ function Library:createManager(options: table)
 			local TitleIcon = Title:FindFirstChild("TitleIcon")
 			if TitleIcon then
 				if state then
-					-- Enable natural rainbow hue cycling effect
 					createNaturalRainbowEffect(TitleIcon)
 				else
-					-- Disable rainbow effect and restore theme color
 					stopRainbowEffect(TitleIcon)
 				end
 			end
@@ -2113,7 +2059,6 @@ function Library:createManager(options: table)
 		end,
 	})
 
-	-- File system
 	if not isfolder(options.folderName) then
 		makefolder(options.folderName)
 	end
@@ -2172,7 +2117,6 @@ function Library:createManager(options: table)
 		end,
 	})
 
-	-- Auto load
 	SaveManager:createButton({
 		text = "Set as Auto Load",
 		callback = function()
@@ -2227,7 +2171,6 @@ function Library:createManager(options: table)
 	self.managerCreated = true
 end
 
--- Set users theme choice or default theme when initiliazed, could make this cleaner lol, but nah.
 Theme:registerToObjects({
 	{ object = Glow, property = "ImageColor3", theme = { "PrimaryBackgroundColor" } },
 	{ object = Background, property = "BackgroundColor3", theme = { "SecondaryBackgroundColor" } },
@@ -2238,11 +2181,9 @@ Theme:registerToObjects({
 	{ object = Assets.Pages.Fade, property = "BackgroundColor3", theme = { "PrimaryBackgroundColor" } },
 })
 
--- Make UI Draggable and Resizable
 Utility:draggable(Library, Glow)
 Utility:resizable(Library, Glow.Background.Pages.Resize, Glow)
 
--- Clean up Addon objects with no Addons
 task.spawn(function()
 	while not Library.managerCreated do
 		task.wait()
@@ -2254,5 +2195,85 @@ task.spawn(function()
 		end
 	end
 end)
+
+function Library:createToggleButton()
+    local ToggleButtonGui = Instance.new("ScreenGui")
+    ToggleButtonGui.Name = "LenyUIToggleButton"
+    ToggleButtonGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ToggleButtonGui.ResetOnSpawn = false
+
+    if RunService:IsStudio() then
+        ToggleButtonGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    else
+        ToggleButtonGui.Parent = cloneref(game.CoreGui)
+    end
+    
+    local ButtonContainer = Instance.new("Frame")
+    ButtonContainer.Name = "ButtonContainer"
+    ButtonContainer.Size = UDim2.new(0, 64, 0, 64)
+    ButtonContainer.AnchorPoint = Vector2.new(1, 1)
+    ButtonContainer.Position = UDim2.new(1, -20, 1, -20)
+    ButtonContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    ButtonContainer.BackgroundTransparency = 0.3
+    ButtonContainer.BorderSizePixel = 0
+    ButtonContainer.Parent = ToggleButtonGui
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 12)
+    UICorner.Parent = ButtonContainer
+
+    local ToggleButton = Instance.new("ImageButton")
+    ToggleButton.Name = "ToggleButton"
+    ToggleButton.Size = UDim2.new(1, -12, 1, -12)
+    ToggleButton.Position = UDim2.new(0.5, 0, 0.5, 0)
+    ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
+    ToggleButton.BackgroundTransparency = 1
+    ToggleButton.Image = "rbxassetid://110774279816088"
+    ToggleButton.ImageColor3 = Color3.fromRGB(255, 30, 30)
+    ToggleButton.ScaleType = Enum.ScaleType.Fit
+    ToggleButton.Parent = ButtonContainer
+
+    local RedDot = Instance.new("Frame")
+    RedDot.Name = "RedDot"
+    RedDot.Size = UDim2.new(0, 10, 0, 10)
+    RedDot.Position = UDim2.new(1, -5, 0, -5)
+    RedDot.AnchorPoint = Vector2.new(0.5, 0.5)
+    RedDot.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+    RedDot.BorderSizePixel = 0
+    RedDot.Parent = ToggleButton
+    
+    local DotCorner = Instance.new("UICorner")
+    DotCorner.CornerRadius = UDim.new(1, 0)
+    DotCorner.Parent = RedDot
+
+    ToggleButton.MouseButton1Click:Connect(function()
+        Library:ToggleUI()
+        local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local tween = TweenService:Create(ToggleButton, tweenInfo, {Size = UDim2.new(1, -20, 1, -20)})
+        tween:Play()
+        tween.Completed:Wait()
+        TweenService:Create(ToggleButton, tweenInfo, {Size = UDim2.new(1, -12, 1, -12)}):Play()
+    end)
+    
+    ToggleButton.MouseEnter:Connect(function()
+        TweenService:Create(ButtonContainer, TweenInfo.new(0.2), {BackgroundTransparency = 0.1}):Play()
+        TweenService:Create(ToggleButton, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+    end)
+
+    ToggleButton.MouseLeave:Connect(function()
+        TweenService:Create(ButtonContainer, TweenInfo.new(0.2), {BackgroundTransparency = 0.3}):Play()
+        TweenService:Create(ToggleButton, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(255, 30, 30)}):Play()
+    end)
+
+    table.insert(Connections, {
+        Disconnect = function()
+            if ToggleButtonGui and ToggleButtonGui.Parent then
+                ToggleButtonGui:Destroy()
+            end
+        end
+    })
+end
+
+Library:createToggleButton()
 
 return Library
