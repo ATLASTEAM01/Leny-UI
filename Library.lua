@@ -138,7 +138,7 @@ Resize.MouseButton1Down:Connect(function()
 	tabResizing = true
 end)
 
-local touchMoved = UserInputService.TouchMoved:Connect(function()
+local touchMoved = UserInputService.TouchMoved:Connect(function(input)
 	if tabResizing then
 		local newSizeX = math.clamp(
 			((input.Position.X - Glow.AbsolutePosition.X) / Glow.AbsoluteSize.X) * Glow.AbsoluteSize.X,
@@ -211,7 +211,7 @@ function Library.new(options)
 		sizeX = { Default = Library.sizeX, ExpectedType = "number" },
 		sizeY = { Default = Library.sizeY, ExpectedType = "number" },
 		tabSizeX = { Default = Library.tabSizeX, ExpectedType = "number" },
-		loadIcon = { Default = false, ExpectedType = "boolean" },
+		loadIcon = { Default = true, ExpectedType = "boolean" },
 		title = { Default = "Leny", ExpectedType = "string" },
 		iconTitle = { Default = "rbxassetid://110774279816088", ExpectedType = "string" },
 		rainbowIcon = { Default = false, ExpectedType = "boolean" },
@@ -2235,8 +2235,8 @@ function Library:createToggleButton()
 	ToggleButton.Position = UDim2.new(0.5, 0, 0.5, 0)
 	ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
 	ToggleButton.BackgroundTransparency = 1
-	ToggleButton.Image = "rbxassetid://73424242673503"
-	ToggleButton.ImageColor3 = Color3.fromRGB(255, 30, 30)
+	ToggleButton.Image = "rbxassetid://110774279816088"
+	ToggleButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
 	ToggleButton.ScaleType = Enum.ScaleType.Fit
 	ToggleButton.Parent = ButtonContainer
 
@@ -2262,27 +2262,29 @@ function Library:createToggleButton()
 
 	ScreenGui:GetPropertyChangedSignal("Enabled"):Connect(updateDotColor)
 	updateDotColor()
-
+	
 	ToggleButton.MouseButton1Click:Connect(function()
 		Library:ToggleUI()
 	end)
 
 	ToggleButton.MouseEnter:Connect(function()
 		ButtonContainer.BackgroundTransparency = 0.1
-		ToggleButton.ImageColor3 = Color3.fromRGB(255, 100, 100)
 	end)
 
 	ToggleButton.MouseLeave:Connect(function()
 		ButtonContainer.BackgroundTransparency = 0.3
-		ToggleButton.ImageColor3 = Color3.fromRGB(255, 30, 30)
 	end)
 
 	local buttonDragInput = nil
 	local buttonDragStart = nil
 	local buttonStartPos = nil
 	
-	ToggleButton.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+	local function canDrag(input)
+		return input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
+	end
+	
+	ButtonContainer.InputBegan:Connect(function(input)
+		if canDrag(input) then
 			buttonDragInput = input
 			buttonDragStart = input.Position
 			buttonStartPos = ButtonContainer.Position
