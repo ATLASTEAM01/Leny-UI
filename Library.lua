@@ -19,7 +19,7 @@ end
 local Library = {
 	sizeX = 800,
 	sizeY = 600,
-	tabSizeX = 200,
+	tabSizeX = 100,
 
 	dragging = false,
 	sliderDragging = false,
@@ -2225,8 +2225,8 @@ function Library:createToggleButton()
 	local Stroke = Instance.new("UIStroke")
 	Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	Stroke.Color = Color3.fromRGB(230, 230, 230)
-	Stroke.Thickness = 2
-	Stroke.Transparency = 0.5
+	Stroke.Thickness = 1
+	Stroke.Transparency = 0.3
 	Stroke.Parent = ButtonContainer
 
 	local UICorner = Instance.new("UICorner")
