@@ -19,7 +19,7 @@ end
 local Library = {
 	sizeX = 800,
 	sizeY = 600,
-	tabSizeX = 100,
+	tabSizeX = 150,
 
 	dragging = false,
 	sliderDragging = false,
