@@ -169,6 +169,9 @@ local touchEnded = UserInputService.TouchEnded:Connect(function(input)
 end)
 
 table.insert(Connections, inputChanged)
+table.insert(Connections, touchMoved)
+table.insert(Connections, touchEnded)
+
 
 Resize.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -2217,11 +2220,12 @@ function Library:createToggleButton()
 	ButtonContainer.BackgroundTransparency = 0.3
 	ButtonContainer.BorderSizePixel = 0
 	ButtonContainer.Parent = ToggleButtonGui
+	ButtonContainer.Active = true
 
 	local Stroke = Instance.new("UIStroke")
 	Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	Stroke.Color = Color3.fromRGB(230, 230, 230)
-	Stroke.Thickness = 1
+	Stroke.Thickness = 2
 	Stroke.Transparency = 0.5
 	Stroke.Parent = ButtonContainer
 
@@ -2229,7 +2233,7 @@ function Library:createToggleButton()
 	UICorner.CornerRadius = UDim.new(0, 12)
 	UICorner.Parent = ButtonContainer
 
-	local ToggleButton = Instance.new("ImageButton")
+	local ToggleButton = Instance.new("ImageLabel")
 	ToggleButton.Name = "ToggleButton"
 	ToggleButton.Size = UDim2.fromScale(0.8, 0.8)
 	ToggleButton.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -2262,45 +2266,47 @@ function Library:createToggleButton()
 
 	ScreenGui:GetPropertyChangedSignal("Enabled"):Connect(updateDotColor)
 	updateDotColor()
-	
-	ToggleButton.MouseButton1Click:Connect(function()
-		Library:ToggleUI()
-	end)
 
-	ToggleButton.MouseEnter:Connect(function()
+	ButtonContainer.MouseEnter:Connect(function()
 		ButtonContainer.BackgroundTransparency = 0.1
 	end)
 
-	ToggleButton.MouseLeave:Connect(function()
+	ButtonContainer.MouseLeave:Connect(function()
 		ButtonContainer.BackgroundTransparency = 0.3
 	end)
 
-	local buttonDragInput = nil
-	local buttonDragStart = nil
-	local buttonStartPos = nil
-	
-	local function canDrag(input)
-		return input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
-	end
+	local dragInput = nil
+	local dragStart = nil
+	local startPos = nil
+	local isDragging = false
 	
 	ButtonContainer.InputBegan:Connect(function(input)
-		if canDrag(input) then
-			buttonDragInput = input
-			buttonDragStart = input.Position
-			buttonStartPos = ButtonContainer.Position
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+			dragStart = input.Position
+			startPos = ButtonContainer.Position
+			isDragging = false
 		end
 	end)
-
+	
 	UserInputService.InputChanged:Connect(function(input)
-		if buttonDragInput and input == buttonDragInput then
-			local delta = input.Position - buttonDragStart
-			ButtonContainer.Position = UDim2.new(buttonStartPos.X.Scale, buttonStartPos.X.Offset + delta.X, buttonStartPos.Y.Scale, buttonStartPos.Y.Offset + delta.Y)
+		if dragInput and input == dragInput then
+			local delta = input.Position - dragStart
+			if delta.Magnitude > 5 then
+				isDragging = true
+			end
+			if isDragging then
+				ButtonContainer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+			end
 		end
 	end)
-
-	UserInputService.InputEnded:Connect(function(input)
-		if buttonDragInput and input == buttonDragInput then
-			buttonDragInput = nil
+	
+	ButtonContainer.InputEnded:Connect(function(input)
+		if dragInput and input == dragInput then
+			if not isDragging then
+				Library:ToggleUI()
+			end
+			dragInput = nil
 		end
 	end)
 
